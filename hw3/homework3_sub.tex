@@ -1,0 +1,293 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{float}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\title{\textbf{Homework 3}\\Statistics 140}
+\date{Due: March 4, 2026}
+\author{}
+
+\begin{document}
+\maketitle
+
+% =====================================================================
+\section*{Problem 1}
+
+\subsection*{Setup}
+
+In Florian's experiment (Harpaz et al., 2021), groups of five larval zebrafish at 7 dpf were classified as wildtype ($G_i^{obs}=0$, denoted $+/+$) or \textit{scn1lab} mutant ($G_i^{obs}=1$, denoted $+/-$). The outcome $Y_i^{obs}$ is the alignment measure for each group. From the data:
+\begin{itemize}
+  \item $N_{+/+} = 10$ wildtype groups
+  \item $N_{+/-} = 16$ mutant groups
+  \item $N = 26$ total groups
+\end{itemize}
+
+\subsection*{Total number of allocations}
+
+Under a completely randomized design, the total number of possible allocations is:
+\[
+  \binom{N}{N_{+/-}} = \binom{26}{16} = 5{,}311{,}735.
+\]
+
+\subsection*{Replicating the Fisher-exact p-value}
+
+The sharp null hypothesis states that for each group $i$, $Y_i(G_i=0) = Y_i(G_i=1)$, i.e., the \textit{scn1lab} mutation has no effect on alignment. We use the Welch $t$-statistic $T_{\text{Welch}}$ as our test statistic and define ``more extreme'' as ``greater than.''
+
+From the observed data:
+\begin{align*}
+  \bar{Y}_{+/-}^{obs} &= 0.4109, \quad \bar{Y}_{+/+}^{obs} = 0.4070, \\
+  T_{\text{Welch}}^{obs} &= \frac{\bar{Y}_{+/-}^{obs} - \bar{Y}_{+/+}^{obs}}{\sqrt{s_{+/-}^2/N_{+/-} + s_{+/+}^2/N_{+/+}}} = 0.638.
+\end{align*}
+
+Using 100,000 randomized allocations (randomly permuting the 26 observed outcomes into groups of 16 and 10), we compute:
+\[
+  P_{7\text{Fisher}} = \frac{1}{100{,}000} \sum_{r=1}^{100{,}000} \mathbf{1}(T_{\text{Welch}}^{(r)} \geq T_{\text{Welch}}^{obs}) \approx 0.27,
+\]
+which replicates Florian's result of $P_{7\text{Fisher}} \approx 0.26$.
+
+\subsection*{95\% Confidence Interval for the Average Causal Effect}
+
+Following Neyman's approach, we estimate the average causal effect $\tau$ on the additive scale:
+\[
+  \hat{\tau} = \bar{Y}_{+/-}^{obs} - \bar{Y}_{+/+}^{obs} = 0.0039.
+\]
+The estimated variance (under the constant-effect assumption) is:
+\[
+  \widehat{\text{Var}}(\hat{\tau}) = \frac{s_{+/-}^2}{N_{+/-}} + \frac{s_{+/+}^2}{N_{+/+}},
+\]
+with Welch degrees of freedom $df \approx 18.25$.
+
+The 95\% CI is:
+\[
+  \text{CI}_{95\%} = \hat{\tau} \pm t_{0.975, df} \cdot \sqrt{\widehat{\text{Var}}(\hat{\tau})} = [- 0.0091,\; 0.0169].
+\]
+
+\subsection*{Findings}
+
+\begin{enumerate}
+  \item The Fisher-exact p-value $P_{7\text{Fisher}} \approx 0.27$ is far from any conventional significance threshold, providing no evidence against the sharp null hypothesis.
+  \item The 95\% confidence interval $[-0.009, 0.017]$ for the average causal effect includes zero, consistent with the p-value finding.
+  \item The estimated effect is very small ($\hat{\tau} = 0.004$) and the CI is relatively tight, suggesting that even if there is a true effect of the \textit{scn1lab} mutation on alignment at 7 dpf, it is likely very small.
+  \item Following Wasserstein et al.\ (2019), rather than declaring a null result based solely on $p > 0.05$, we note that the data are compatible with both no effect and small effects (positive or negative) on alignment. The evidence does not support a meaningful effect of the \textit{scn1lab} mutation on group alignment at 7 dpf.
+\end{enumerate}
+
+% =====================================================================
+\section*{Problem 2}
+
+Consider a completely randomized experiment with $N=2$ units and $N_1 = 1$ treated. The sample average treatment effect is:
+\[
+  \tau = \frac{1}{2}\{[Y_1(1) - Y_1(0)] + [Y_2(1) - Y_2(0)]\}.
+\]
+
+\subsection*{(a) Neyman's estimator as a function of $Y_1^{obs}$ and $Y_2^{obs}$}
+
+In a CRE with $N_1 = 1$ and $N_0 = 1$, Neyman's estimator is:
+\[
+  \hat{\tau} = \bar{Y}_1^{obs} - \bar{Y}_0^{obs}.
+\]
+Since each group contains exactly one unit, if $W_1 = 1$ (unit 1 treated, unit 2 control):
+\[
+  \hat{\tau} = Y_1^{obs} - Y_2^{obs}.
+\]
+If $W_1 = 0$ (unit 1 control, unit 2 treated):
+\[
+  \hat{\tau} = Y_2^{obs} - Y_1^{obs}.
+\]
+In general:
+\[
+  \hat{\tau} = (2W_1 - 1)(Y_1^{obs} - Y_2^{obs}).
+\]
+
+\subsection*{(b) Neyman's estimator as a function of potential outcomes}
+
+Since $Y_i^{obs} = W_i Y_i(1) + (1-W_i)Y_i(0)$:
+\begin{itemize}
+  \item If $W_1=1, W_2=0$: $\hat{\tau} = Y_1(1) - Y_2(0)$.
+  \item If $W_1=0, W_2=1$: $\hat{\tau} = Y_2(1) - Y_1(0)$.
+\end{itemize}
+Compactly:
+\[
+  \hat{\tau} = W_1[Y_1(1) - Y_2(0)] + (1-W_1)[Y_2(1) - Y_1(0)].
+\]
+
+\subsection*{(c) $\mathbf{E}_W[D]$ and $\mathbf{V}_W[D]$ where $D = 2W_1 - 1$}
+
+Since $W_1 \in \{0,1\}$ with equal probability $\frac{1}{2}$ in a CRE with $N=2, N_1=1$:
+\[
+  D = 2W_1 - 1 \in \{-1, 1\}, \quad \text{each with probability } \tfrac{1}{2}.
+\]
+\[
+  \mathbf{E}_W[D] = \frac{1}{2}(-1) + \frac{1}{2}(1) = 0.
+\]
+\[
+  \mathbf{E}_W[D^2] = \frac{1}{2}(1) + \frac{1}{2}(1) = 1.
+\]
+\[
+  \mathbf{V}_W[D] = \mathbf{E}_W[D^2] - (\mathbf{E}_W[D])^2 = 1 - 0 = 1.
+\]
+
+\subsection*{(d) Showing that $\hat{\tau} = \frac{D+1}{2}[Y_1(1) - Y_2(0)] + \frac{1-D}{2}[Y_2(1) - Y_1(0)]$}
+
+Since $D = 2W_1 - 1$, we have $W_1 = \frac{D+1}{2}$ and $1-W_1 = \frac{1-D}{2}$.
+
+From part (b):
+\[
+  \hat{\tau} = W_1[Y_1(1) - Y_2(0)] + (1-W_1)[Y_2(1) - Y_1(0)].
+\]
+Substituting:
+\[
+  \boxed{\hat{\tau} = \frac{D+1}{2}[Y_1(1) - Y_2(0)] + \frac{1-D}{2}[Y_2(1) - Y_1(0)].}
+\]
+
+\subsection*{(e) Showing that $\hat{\tau} = \tau + \frac{D}{2}\{[Y_1(1)+Y_1(0)] - [Y_2(1)+Y_2(0)]\}$}
+
+From part (d), expand:
+\begin{align*}
+  \hat{\tau} &= \frac{D+1}{2}[Y_1(1) - Y_2(0)] + \frac{1-D}{2}[Y_2(1) - Y_1(0)] \\
+  &= \frac{1}{2}[Y_1(1) - Y_2(0)] + \frac{D}{2}[Y_1(1) - Y_2(0)] + \frac{1}{2}[Y_2(1) - Y_1(0)] - \frac{D}{2}[Y_2(1) - Y_1(0)] \\
+  &= \frac{1}{2}\{[Y_1(1) - Y_2(0)] + [Y_2(1) - Y_1(0)]\} + \frac{D}{2}\{[Y_1(1) - Y_2(0)] - [Y_2(1) - Y_1(0)]\}.
+\end{align*}
+
+The first term:
+\[
+  \frac{1}{2}\{Y_1(1) - Y_1(0) + Y_2(1) - Y_2(0)\} = \tau.
+\]
+
+The second term:
+\[
+  \frac{D}{2}\{Y_1(1) + Y_1(0) - Y_2(1) - Y_2(0)\} = \frac{D}{2}\{[Y_1(1)+Y_1(0)] - [Y_2(1)+Y_2(0)]\}.
+\]
+
+Therefore:
+\[
+  \boxed{\hat{\tau} = \tau + \frac{D}{2}\{[Y_1(1)+Y_1(0)] - [Y_2(1)+Y_2(0)]\}.}
+\]
+
+\subsection*{(f) Unbiasedness of $\hat{\tau}$ for $\tau$}
+
+From part (e):
+\[
+  \mathbf{E}_W[\hat{\tau}] = \tau + \frac{\mathbf{E}_W[D]}{2}\{[Y_1(1)+Y_1(0)] - [Y_2(1)+Y_2(0)]\}.
+\]
+The potential outcomes are fixed (non-random); only $D$ is random. From part (c), $\mathbf{E}_W[D] = 0$, so:
+\[
+  \mathbf{E}_W[\hat{\tau}] = \tau + 0 = \tau.
+\]
+Thus $\hat{\tau}$ is unbiased for $\tau$. $\square$
+
+
+% =====================================================================
+\section*{Problem 3}
+
+\subsection*{Setup}
+
+The sharp null $H_{\text{Null}}$ states $Y_i(W_i=1) - Y_i(W_i=0) = 0$ for each unit $i$. The counternull hypothesis $H_{\text{Counternull}}$ states $Y_i(W_i=1) - Y_i(W_i=0) = a$ for all $i$, with $a \neq 0$. We use data from CpG site \texttt{cg00000029} in the \texttt{completelyrandomized.csv} dataset, with the test statistic $T = \bar{Y}_E - \bar{Y}_U$ (average outcome difference, ozone vs.\ clean air), and ``more extreme'' defined as ``greater than.''
+
+\subsection*{Data summary}
+
+From the dataset: $N_E = 10$ (ozone, $W_i=2$), $N_U = 7$ (clean air, $W_i=0$), $N = 17$.
+\[
+  T^{obs} = \bar{Y}_E^{obs} - \bar{Y}_U^{obs} = 0.1224 - 0.1132 = 0.0092.
+\]
+
+\subsection*{Fisher p-value under $H_{\text{Null}}$}
+
+Under $H_{\text{Null}}$, using 100,000 random permutations:
+\[
+  p_{\text{Fisher}} = \frac{1}{100{,}000}\sum_{r=1}^{100{,}000}\mathbf{1}(T^{(r)}_{H_{\text{Null}}} \geq T^{obs}) \approx 0.316.
+\]
+
+\subsection*{Procedure for the counternull value}
+
+Under $H_{\text{Counternull}}$ with constant additive effect $a$:
+\begin{enumerate}
+  \item Compute the science table of $Y_i(0)$ values: for exposed (ozone) units, $Y_i(0) = Y_i^{obs} - a$; for control units, $Y_i(0) = Y_i^{obs}$.
+  \item Under randomization allocation $r$, the test statistic becomes:
+  \[
+    T^{(r)}_{H_{\text{Counternull}}} = \overline{Y(0)}_{E}^{(r)} + a - \overline{Y(0)}_{U}^{(r)},
+  \]
+  where $\overline{Y(0)}_{E}^{(r)}$ and $\overline{Y(0)}_{U}^{(r)}$ denote the means of $Y(0)$ for units assigned to exposure and control in allocation $r$.
+  \item The counternull randomization distribution is centered at $a$ (since $\mathbf{E}[T^{(r)}] = a$), while the null distribution is centered at 0.
+  \item The counternull value $a$ satisfies:
+  \[
+    \frac{1}{N_{\text{rand}}}\sum_{r}\mathbf{1}(T^{(r)}_{H_{\text{Null}}} \geq T^{obs}) = \frac{1}{N_{\text{rand}}}\sum_{r}\mathbf{1}(T^{(r)}_{H_{\text{Counternull}}} \leq T^{obs}).
+  \]
+\end{enumerate}
+
+For the difference-in-means test statistic, the null randomization distribution is symmetric around 0, and the counternull distribution (for small $a$) is approximately symmetric around $a$. By the symmetry argument:
+\[
+  P(T_{\text{Null}} \geq T^{obs}) = P(T_{\text{Counternull}} \leq T^{obs})
+\]
+is satisfied when $T^{obs}$ is equidistant from the centers of the two distributions, yielding:
+\[
+  a = 2 \times T^{obs}.
+\]
+
+\subsection*{Result}
+
+The counternull value for \texttt{cg00000029} is:
+\[
+  \boxed{a = 2 \times T^{obs} = 2 \times 0.0092 = 0.0184.}
+\]
+
+Verification via simulation: Under $H_{\text{Counternull}}$ with $a = 0.0184$, we find $P(T^{(r)}_{H_{\text{Counternull}}} \leq T^{obs}) \approx 0.313$, which matches the Fisher p-value of $\approx 0.316$ (within Monte Carlo error).
+
+\textbf{Interpretation:} The null value $a=0$ and the counternull value $a=0.0184$ are equally consistent with the observed data (both have the same p-value of $\approx 0.32$). This illustrates that the data do not strongly distinguish between no effect and a small positive effect of ozone exposure on DNA methylation at this CpG site.
+
+
+% =====================================================================
+\section*{Problem 4}
+
+\subsection*{Setup}
+
+We construct a 95\% ``Fisher'' interval (FI) for $\tau_i$ for CpG site \texttt{cg00000029}. The Fisher interval inverts the Fisher randomization test: it is the set of all constant additive effect values $\tau_0$ that are not rejected by the two-sided Fisher test at level $\alpha = 0.05$.
+
+Under $H_{\tau_0}: Y_i(W_i=2) - Y_i(W_i=0) = \tau_0$ for all $i$:
+\begin{itemize}
+  \item Construct the $Y_i(0)$ values: $Y_i(0) = Y_i^{obs} - \tau_0$ for exposed units ($W_i=2$), $Y_i(0) = Y_i^{obs}$ for control units.
+  \item For each randomized allocation $r$, compute $T^{(r)} = \bar{Y}^{(r)}_E - \bar{Y}^{(r)}_U$ using the science table derived from $\tau_0$.
+  \item Compute the one-sided p-value: $p(\tau_0) = P(T^{(r)} \geq T^{obs})$.
+  \item The 95\% FI is $\{\tau_0: 0.025 \leq p(\tau_0) \leq 0.975\}$.
+\end{itemize}
+
+\subsection*{Procedure}
+
+Using 100,000 randomized allocations for each candidate $\tau_0$, we search for the boundary values:
+\begin{itemize}
+  \item Lower bound $\tau_L$: the value where $p(\tau_L) = 0.025$ (from below).
+  \item Upper bound $\tau_U$: the value where $p(\tau_U) = 0.975$ (from above).
+\end{itemize}
+
+A grid search yields:
+\begin{center}
+\begin{tabular}{cc}
+\toprule
+$\tau_0$ & $p(\tau_0)$ \\
+\midrule
+$-0.032$ & 0.018 \\
+$-0.030$ & 0.022 \\
+$-0.029$ & 0.026 \\
+$-0.028$ & 0.029 \\
+\midrule
+$0.046$ & 0.967 \\
+$0.048$ & 0.974 \\
+$0.050$ & 0.979 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Result}
+
+By interpolation, the 95\% Fisher interval for $\tau_i$ is approximately:
+\[
+  \boxed{\text{FI}_{95\%} \approx [-0.029,\; 0.048].}
+\]
+
+\textbf{Interpretation:} This interval contains zero, consistent with the non-significant Fisher p-value found in Problem 3. The Fisher interval is compatible with both small negative and small positive effects of ozone exposure on DNA methylation at CpG site \texttt{cg00000029}. Unlike the Neyman CI, the Fisher interval is constructed by inverting the randomization test and does not rely on large-sample approximations or distributional assumptions. It provides an exact interval based on the randomization distribution under the assumption of constant additive unit-level treatment effects.
+
+\end{document}
