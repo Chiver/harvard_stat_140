@@ -1,0 +1,63 @@
+---
+title: "Homework 4 Solutions"
+output: pdf_document
+date: "Due April 8, 2026 at 9 pm"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Problem 1. 
+
+Let us return to the `epigenetic.RData` data set and assess the effect of ozone vs. clean air on `cg09008103` DNA methylation using regression. Consider the following linear regression $Y_i^{obs}=\beta_0 + \beta_1 W_i^{obs} + \epsilon_i$, where $W_i^{obs}=0$ for clean air and $W_i^{obs}=1$ for ozone, and $\epsilon_i \sim$ $N(0,\sigma^2)$. Estimate and interpret the regression coefficients. What does this regression model assume? Comment on these assumptions.
+
+Test the sharp null hypothesis, which states that for each participant $i$, \textit{cg09008103} DNA methylation is the same under clean air and ozone. Use $\hat{\beta}_1$ as the test statistic and use "greater than" as "more extreme". What does the Fisher-exact p-value assume about the residuals of the model? Comment on the Fisher-exact p-value and the asymptotic p-value provided by the regression model.
+
+\newpage
+
+### Problem 2. 
+
+Now load the data set `epigenetic2.RData`, which has 17 participants exposed either to clean air, Diesel, or ozone. Let us denote the assignment mechanism to clean air by $W_i=0$, to Diesel by $W_i=1$, and to ozone by $W_i=2$. How many participants are exposed to clean air, Diesel, and ozone? 
+
+Using `ggplot2`, display `cg09008103` DNA methylation across exposure groups. Describe your results, including the variances of `cg09008103` DNA methylation across exposure groups.
+
+Perform an analysis of variance to compare `cg09008103` DNA methylation across exposure groups. Calculate the F statistic and describe what the F statistic represents.
+
+Assess the differences of `cg09008103` DNA methylation across exposure groups (i.e., ozone vs. clean air and Diesel vs. clean air) using a regression. Can you identify some issues with these additional tests?
+
+How many ways are there to randomize 17 participants to five participants exposed to clean air, six participants exposed to Diesel, and six participants exposed to ozone?
+
+Write with potential outcome notations and test the global sharp null hypothesis, which states that for each participant $i$, the \textit{cg09008103} DNA methylation is the same across exposure groups. Set the seed to `2026`. Use the F statistic obtained from the ANOVA you conducted as your test statistic and consider "greater than" for "more extreme". Display and comment on the histogram of the null randomization distribution of the F statistic. Calculate an approximated Fisherian p-value (i.e., you can use 100,000 randomized allocations). Justify your choices and interpret your results. Based on your results, stop or continue to further assess \textit{cg09008103} DNA methylation across exposure groups. Justify your answer. If you further assess specific group differences, use Fisherian inference to do so and comment on potential issues. Contrast the Fisherian inferences you obtained to the inferences you obtained using approximating asymptotic distributions.
+
+\newpage
+
+## Problem 3
+
+Recall the crossover randomized setting presented in class, where $Y_{i,j}(W_{i,j}=w_{i,j})$ denotes the i$^{th}$ participant's potential outcome at period $j$. The goal is to assess the period- and population-average causal effect of treatment versus control ($\tau$). 
+
+Describe the sharp null hypothesis associated with this causal question.
+
+Describe an alternative test statistic to $T_{paired}$.
+
+
+\newpage
+
+## Problem 4
+Let us consider a randomized experiment with $N$ participants stratified by sex, that is with $N(m)$ males and $N(f)$ females. Let $Y_{i}(W_i=0)$ and $Y_{i}(W_i=1)$ denote the i$^{th}$ unit's potential outcomes under control and treatment, respectively. 
+
+Describe the average causal effect of treatment versus control, $\tau$, as a function of the treatment effects for the males and the females and as a function of $N(m)$ and $N(f)$. 
+
+Write down an estimator for $\tau$. 
+
+Derive the sampling variance of the estimator for $\tau$. Explain your answer.
+
+
+\newpage
+
+## Problem 5
+
+Write down a science table and an observed table for a two-factor randomized experiment. Assume each factor has two levels (i.e., -1 and +1).
+
+Explain how your answer would change if the experiment now has three factors, each with two levels (i.e., -1 and +1). Write all treatment combinations in a lexicographic order.
