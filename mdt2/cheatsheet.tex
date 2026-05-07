@@ -1,0 +1,577 @@
+\documentclass[10pt,landscape]{article}
+\usepackage[landscape,margin=0.35in,top=0.3in,bottom=0.3in]{geometry}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+% -------- layout --------
+\setlength{\columnsep}{10pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1pt}
+\pagestyle{empty}
+
+% -------- colors --------
+\definecolor{hdr}{RGB}{25,60,130}
+\definecolor{acc}{RGB}{180,30,70}
+\definecolor{sub}{RGB}{40,110,60}
+\definecolor{warn}{RGB}{200,80,10}
+\definecolor{lgrey}{RGB}{235,235,240}
+\definecolor{bgbox}{RGB}{250,250,242}
+
+% -------- manual section-like headings (avoids titlesec parameter quirks in multicols) --------
+\newcounter{secN}
+\newcommand{\Sec}[1]{%
+  \stepcounter{secN}%
+  \vspace{3pt}\par\noindent
+  \colorbox{hdr}{\color{white}\footnotesize\bfseries\parbox{0.95\columnwidth}{\strut\ \arabic{secN}.\ #1}}\par\vspace{1pt}}
+\newcommand{\SubSec}[1]{\vspace{2pt}\par\noindent{\footnotesize\bfseries\color{acc}#1}\par\vspace{0.5pt}}
+\newcommand{\SubSubSec}[1]{\par\noindent{\footnotesize\bfseries\color{sub}#1}\par}
+
+% -------- helpers --------
+\newcommand{\key}[1]{\textbf{\color{acc}#1}}
+\newcommand{\note}[1]{\textit{\small\color{warn}#1}}
+\newcommand{\defn}[2]{\textbf{#1}: #2}
+\newcommand{\symb}[3]{$#1$ -- #2 \textit{(e.g.\ #3)}}
+
+\newtcolorbox{infobox}[1][]{
+  colback=bgbox,colframe=hdr,boxrule=0.4pt,arc=1.5pt,
+  left=3pt,right=3pt,top=2pt,bottom=2pt,
+  fonttitle=\footnotesize\bfseries,#1}
+
+\newtcolorbox{qbox}[1][]{
+  colback=yellow!8,colframe=warn,boxrule=0.4pt,arc=1.5pt,
+  left=3pt,right=3pt,top=2pt,bottom=2pt,#1}
+
+% Compact table style
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{3pt}
+
+% Math spacing
+\setlength{\abovedisplayskip}{2pt}
+\setlength{\belowdisplayskip}{2pt}
+\setlength{\abovedisplayshortskip}{1pt}
+\setlength{\belowdisplayshortskip}{1pt}
+
+% Make all display equations slightly smaller
+\everydisplay{\footnotesize}
+
+\begin{document}
+\small
+
+% ==================== TITLE BANNER ====================
+\begin{center}
+\colorbox{hdr}{\parbox{0.995\textwidth}{\centering\color{white}\textbf{\normalsize STAT 140 Midterm 2 Cheatsheet} \ -- \ \textbf{\footnotesize Six Designs $\cdot$ $2^K$ Lex Order $\cdot$ Fractional Factorial $\cdot$ Fisherian $T$'s} \ -- \ \textbf{\footnotesize Ver.\ Apr 2026}}}
+\end{center}
+\vspace{-6pt}
+
+\begin{multicols*}{3}
+
+% ==================== 0. NOTATION & GENERAL MAP ====================
+\Sec{Notation \& General Map}
+\vspace{-2pt}
+\begin{tabbing}
+\hspace{1.15cm}\=\kill
+$N$ \> total units (e.g.\ 6 plots) \\
+$N_T,N_C$ \> sizes of treatment / control arms \\
+$|W^+|$ \> \# legal assignment vectors \\
+$P(W)$ \> $=1/|W^+|$ under complete rand. \\
+$Y_i(w)$ \> potential outcome of unit $i$ at $w$ \\
+$\tau_i$ \> $Y_i(1)-Y_i(0)$, unit-level effect \\
+$\tau$ \> $\tfrac1N\sum\tau_i$, average causal effect \\
+$\hat\tau$ \> estimator of $\tau$ from observed data \\
+$Y_i^{obs}$ \> observed outcome of $i$ under $W_i$ \\
+$\bar Y_T^{obs},\bar Y_C^{obs}$ \> observed arm means \\
+$s_j^2$ \> within-arm sample variance $\div(N_j{-}1)$ \\
+$S_\tau^2$ \> finite-pop variance of $\tau_i$ (unobs.) \\
+\end{tabbing}
+\vspace{-6pt}
+
+\begin{infobox}
+\textbf{Two inference styles — don't mix!}\\[1pt]
+\key{Fisherian}: sharp null $\tau_i=0\forall i$; $Y^{obs}$ fixed; reference set comes from design; compute $p$-value.\\[1pt]
+\key{Neymanian}: estimate $\hat\tau$ and its variance; build $\hat\tau\pm 2\cdot SE$ CI (95\% uses \textbf{2}, not 1.96 -- STAT 140 convention).
+\end{infobox}
+
+% ==================== 1. CRE ====================
+\Sec{CRE (Completely Randomized)}
+
+\SubSec{Setup}
+$N$ units split into $N_T$ treated and $N_C$ controls by simple random assignment.
+$$|W^+|=\binom{N}{N_T},\qquad P(W_i{=}1)=\frac{N_T}{N}=\tfrac12\text{ if balanced.}$$
+
+\SubSec{Neymanian steps}
+\begin{enumerate}[leftmargin=*,noitemsep,nosep]
+\item Arm means: $\bar Y_T^{obs}=\tfrac1{N_T}\sum_{W_i=1}Y_i^{obs}$ (same for $C$).
+\item Estimator: $\hat\tau=\bar Y_T^{obs}-\bar Y_C^{obs}$.
+\item Sample variances: $s_j^2=\tfrac{1}{N_j-1}\sum_{i\in j}(Y_i^{obs}-\bar Y_j^{obs})^2$.
+\item \textbf{Conservative} variance estimate:
+$$\widehat{\mathrm{Var}}(\hat\tau)=\tfrac{s_1^2}{N_T}+\tfrac{s_0^2}{N_C}.$$
+\item 95\% CI: $\hat\tau\pm 2\cdot\sqrt{\widehat{\mathrm{Var}}(\hat\tau)}$.
+\end{enumerate}
+
+\SubSec{Fisherian steps}
+Sharp null $H_0:Y_i(1)=Y_i(0)\;\forall i$. Under $H_0$ all $N$ numbers are fixed; only labels move.\\
+Test stat: $T_{dm}=\bar Y_T-\bar Y_C$.
+$$p=\frac{\#\{W\in W^+:\,|T(W)|\ge|T^{obs}|\}}{|W^+|}.$$
+If $|W^+|$ big (e.g.\ $\binom{30}{15}\!\approx\!1.5\!\times\!10^8$) $\Rightarrow$ Monte Carlo $B\!=\!10{,}000$ draws.
+
+\SubSec{Why variance is \textbf{conservative}}
+True variance $=\tfrac{S_1^2}{N_T}+\tfrac{S_0^2}{N_C}-\tfrac{S_\tau^2}{N}$. Last term $S_\tau^2/N\ge0$ but needs \emph{both} potential outcomes per unit -- \textbf{unobservable}. Dropping it inflates the estimate $\Rightarrow$ upper bound (still valid for 95\% CI, just wider).
+
+\SubSec{Mini worked example ($N{=}6,N_T{=}N_C{=}3$)}
+Observed $Y_T^{obs}\!=\!\{30,32,34\},Y_C^{obs}\!=\!\{22,21,24\}$.
+$\hat\tau\!=\!32-22.33\!=\!9.67$; $s_1^2\!=\!4,s_0^2\!\approx\!2.33$; $\widehat{\mathrm{Var}}\!\approx\!2.11$, $SE\!\approx\!1.45$; CI $\!=\!(6.76,12.58)$.
+
+% ==================== 2. MATCHED PAIR ====================
+\Sec{Matched Pair Design}
+
+\SubSec{Setup}
+$N$ units in $P=N/2$ pairs (matched on pre-treatment covariate). Within each pair, flip a coin: one unit $\to T$, one $\to C$.
+$$|W^+|=2^P,\qquad P(W)=1/2^P.$$
+
+\SubSec{Neymanian steps}
+\begin{enumerate}[leftmargin=*,noitemsep,nosep]
+\item Within-pair difference: $d_p=Y_{T,p}^{obs}-Y_{C,p}^{obs}$.
+\item Estimator: $\hat\tau=\bar d=\tfrac1P\sum d_p$.
+\item Sample variance of differences: $s_d^2=\tfrac{1}{P-1}\sum(d_p-\bar d)^2$.
+\item \textbf{Exact} variance estimate:
+$$\widehat{\mathrm{Var}}(\hat\tau)=\tfrac{s_d^2}{P}.$$
+\item 95\% CI: $\bar d\pm 2\sqrt{s_d^2/P}$.
+\end{enumerate}
+
+\SubSec{Fisherian steps}
+Under sharp null each $d_p$'s sign is a fair coin flip (pair-internal rand.).
+Test stat: $T=\bar d$. Reference set: $2^P$ sign patterns $\epsilon\in\{-1,+1\}^P$, $d_p^*=\epsilon_p|d_p|$.
+$p=\#\{|\bar d^*|\ge|\bar d^{obs}|\}/2^P$.
+
+\SubSec{Why variance is \textbf{exact} (not conservative)}
+$d_p$ is \textbf{directly observable} for every pair -- no hidden $S_\tau^2$ in the formula. So $s_d^2/P$ is an unbiased estimate of the true $\mathrm{Var}(\hat\tau)$, not an upper bound.
+
+\SubSec{Key trap}
+Reference set is $2^P$, \textbf{NOT} $\binom{N}{N/2}$. The $\binom{N}{N/2}$ would allow swapping fish across pairs, violating the design.
+
+\SubSec{Mini worked example ($P{=}4$ pairs)}
+Observed $d=\{3,1,5,3\}$. $\bar d=3$; devs $\{0,-2,2,0\}\Rightarrow s_d^2=8/3\approx 2.67$; $\widehat{\mathrm{Var}}=s_d^2/4=2/3\approx 0.67$, $SE\approx 0.82$; CI $=3\pm 1.63=(1.37,4.63)$. Fisherian: $T^{obs}=3$; of the $2^4=16$ sign patterns, only $(+,+,+,+)$ and $(-,-,-,-)$ give $|\bar d^*|\ge 3\Rightarrow p=2/16=0.125$.
+
+% ==================== 3. MULTI-TREATMENT CRE ====================
+\Sec{Multi-Treatment CRE}
+
+\SubSec{Setup}
+$N$ units allocated to $J$ arms with sizes $N_1,\dots,N_J$, $\sum N_j=N$.
+$$|W^+|=\frac{N!}{\prod_j N_j!}.$$
+
+\SubSec{ANOVA decomposition (formulas)}
+$\bar Y=\tfrac1N\sum_i Y_i^{obs}$ (grand mean).\\
+$SS_{Treat}=\sum_{j=1}^J N_j(\bar Y_j-\bar Y)^2$ (between-arm).\\
+$SS_{Res}=\sum_{j}\sum_{i\in j}(Y_i^{obs}-\bar Y_j)^2$ (within-arm).\\
+$SS_{Total}=\sum_i(Y_i^{obs}-\bar Y)^2=SS_{Treat}+SS_{Res}$.
+
+\SubSec{Generic ANOVA table}
+\begin{center}\tiny
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Source & df & SS & MS & $F$ \\
+\midrule
+Treatments & $J{-}1$ & $SS_{Treat}$ & $\tfrac{SS_{Treat}}{J-1}$ & $\tfrac{MS_{Tr}}{MS_{Res}}$ \\
+Residuals & $N{-}J$ & $SS_{Res}$ & $\tfrac{SS_{Res}}{N-J}$ & -- \\
+Total & $N{-}1$ & $SS_{Total}$ & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\SubSec{Intuition for $F$}
+Under sharp null, $MS_{Treat}\approx MS_{Res}\Rightarrow F\approx 1$. Large $F\gg 1$ $\Rightarrow$ reject. $F$-test is \textbf{one-sided} (large values only).
+
+\SubSec{Pairwise Neymanian}
+$\hat\tau(j,j')=\bar Y_j-\bar Y_{j'}$; conservative var $=s_j^2/N_j+s_{j'}^2/N_{j'}$. \textbf{Conservative} because exact variance contains $S_{jj'}^2/N$ needing both potential outcomes per unit.
+
+\SubSec{Multiple testing caution}
+$\binom{J}{2}$ pairwise tests $\Rightarrow$ family-wise error $\approx 1-(1-\alpha)^{\binom{J}{2}}$. Gate with the $F$-test first, then do pairwise.
+
+\SubSec{Fisherian for $F$}
+Under sharp null, permute unit labels across arms (total $|W^+|$ permutations). Recompute $F^{rand}$ each time. $p=\#\{F^{rand}\ge F^{obs}\}/|W^+|$ (one-sided).
+
+\SubSec{Mini worked example ($J{=}3,N{=}9$)}
+Arms: std $\{5,7,6\}\!\to\!\bar Y_1=6$; low $\{8,9,7\}\!\to\!\bar Y_2=8$; high $\{12,11,10\}\!\to\!\bar Y_3=11$. Grand $\bar Y=25/3$.\\
+$SS_{Treat}=3[(6{-}25/3)^2+(8{-}25/3)^2+(11{-}25/3)^2]=3(49{+}1{+}64)/9=38.$\\
+$SS_{Res}=2+2+2=6$. Filled-in ANOVA table:
+\begin{center}\tiny
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Source & df & SS & MS & $F$ \\
+\midrule
+Treat & 2 & 38 & 19 & \textbf{19} \\
+Res & 6 & 6 & 1 & -- \\
+Total & 8 & 44 & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{center}
+Pairwise $\hat\tau(3,1)=5$, var $=1/3+1/3=2/3$, $SE\approx 0.82$, CI $=(3.4,6.6)$.
+
+% ==================== 4. CROSSOVER ====================
+\Sec{Crossover Design}
+
+\SubSec{Setup}
+$N$ subjects, each observed in \textbf{two periods}. Each subject gets T in one period, C in the other; order chosen by coin flip independently per subject.
+$$|W^+|=2^N.$$
+
+\SubSec{Required assumptions}
+\begin{enumerate}[leftmargin=*,noitemsep,nosep]
+\item \key{No carryover}: period-1 treatment doesn't bleed into period 2.
+\item \key{No time/period effect}: the two periods are otherwise exchangeable (no learning, weekday/weekend, adaptation).
+\end{enumerate}
+
+\SubSec{Neymanian}
+Within-subject difference $d_i=Y_i^T-Y_i^C$ (always T minus C, ignoring which came first).
+$$\hat\tau=\bar d,\ s_D^2=\tfrac{1}{N-1}\sum(d_i-\bar d)^2,\ \widehat{\mathrm{Var}}(\hat\tau)=\tfrac{s_D^2}{N}.$$
+
+\SubSec{Fisherian}
+\key{Test statistic}: \ $\displaystyle T_{paired}=\frac{\bar d}{s_D/\sqrt N}.$\\
+Under sharp null each $d_i$'s sign is a coin flip $\Rightarrow$ enumerate all $2^N$ sign patterns (flip independently per subject), recompute $T_{paired}^{rand}$ each time.
+$$p=\#\{|T_{paired}^{rand}|\ge|T_{paired}^{obs}|\}/2^N.$$
+
+\SubSec{Crossover's unique power}
+\key{Unit-level effect is estimable}: $\hat\tau_i=d_i$ is an unbiased estimate of $\tau_i$ itself, not just the average $\tau$. This is impossible in CRE (each unit only ever observed once).
+
+\SubSec{Mini example ($N{=}6$)}
+$d=\{1.2,0.8,-0.3,1.5,0.6,1.0\}\Rightarrow\bar d=0.8,\ s_D^2=0.388,\ T_{paired}\approx 3.15$.
+
+% ==================== 5. BLOCK DESIGN ====================
+\Sec{Block Design}
+
+\SubSec{Setup}
+$B$ blocks; block $k$ has $N(k)$ units with $N_t(k)$ treated. Separate CRE within each block.
+$$|W^+|=\prod_{k=1}^B\binom{N(k)}{N_t(k)}.$$
+
+\SubSec{Neymanian}
+Within-block effect: $\hat\tau(k)=\bar Y_T^{obs}(k)-\bar Y_C^{obs}(k)$.\\
+\key{Overall ATE -- population-weighted}:
+$$\hat\tau=\sum_{k=1}^B \lambda_k\,\hat\tau(k),\quad \lambda_k=\frac{N(k)}{N}.$$
+Conservative variance:
+$$\widehat{\mathrm{Var}}(\hat\tau)=\sum_k\lambda_k^2\!\left[\tfrac{s_T^2(k)}{N_t(k)}+\tfrac{s_C^2(k)}{N_c(k)}\right].$$
+
+\SubSec{Why $N(k)/N$ not $1/B$?}
+Goal is ``average causal effect per person'' $\Rightarrow$ weight by the fraction of the population in block $k$. Using $1/B$ would answer ``average across blocks'' (ignoring block size).
+
+\SubSec{Fisherian test stat}
+\key{$T_\lambda$}:
+$$T_\lambda=\sum_k\lambda_k[\bar Y_T^{obs}(k)-\bar Y_C^{obs}(k)].$$
+Reference set: \textbf{re-randomize within each block}. Size $=\prod_k\binom{N(k)}{N_t(k)}$ (\textbf{not} $\binom{N}{N_T}$!). Mixing blocks violates the design.
+
+\SubSec{Effect modification test}
+Is $\tau$ different across blocks? With 2 blocks $k=a,b$:
+$$\hat\Delta=\hat\tau(a)-\hat\tau(b),\ \widehat{\mathrm{Var}}=\sum_{k\in\{a,b\}}\left[\tfrac{s_T^2(k)}{N_t(k)}+\tfrac{s_C^2(k)}{N_c(k)}\right].$$
+(Variances \textbf{add} because blocks are independent; no $\lambda^2$ -- we're estimating a difference, not a weighted average.)\\
+95\% CI $\hat\Delta\pm 2SE$; contains 0 $\Leftrightarrow$ no evidence of effect modification.
+
+\SubSec{Purpose of step 7 vs steps 4--6}
+Steps 4--6 integrate across blocks into one ATE. Step 7 \emph{separates} blocks to ask ``does the effect differ?'' Both are useful: one gives a summary number, the other diagnoses heterogeneity.
+
+\SubSec{Mini worked example ($B{=}2$: young/old)}
+Young: $N(y)=6$, $\hat\tau(y)=14-10=4$, $s_T^2=s_C^2=4$. Old: $N(o)=4$, $\hat\tau(o)=20-17=3$, $s_T^2=8,s_C^2=2$. $\lambda_y=0.6,\lambda_o=0.4$. $\hat\tau=0.6(4)+0.4(3)=3.6$. Var $=(0.6)^2(4/3+4/3)+(0.4)^2(8/2+2/2)=0.96+0.80=1.76$; $SE\approx 1.33$; CI $=3.6\pm 2.65=(0.95,6.25)$. Ref.\ set size $=\binom{6}{3}\binom{4}{2}=20\cdot 6=120$.
+
+% ==================== 6. FACTORIAL $2^K$ ====================
+\Sec{Factorial $2^K$ Design}
+
+\SubSec{Lex-order design matrix ($K{=}3$)}
+$F_1$ varies slowest, $F_3$ varies fastest -- binary counting 000$\to$111.\\
+\begin{center}\tiny
+\begin{tabular}{ccccc}
+\toprule
+Run & $F_1$ & $F_2$ & $F_3$ & binary \\
+\midrule
+1 & $-$ & $-$ & $-$ & 000 \\
+2 & $-$ & $-$ & $+$ & 001 \\
+3 & $-$ & $+$ & $-$ & 010 \\
+4 & $-$ & $+$ & $+$ & 011 \\
+5 & $+$ & $-$ & $-$ & 100 \\
+6 & $+$ & $-$ & $+$ & 101 \\
+7 & $+$ & $+$ & $-$ & 110 \\
+8 & $+$ & $+$ & $+$ & 111 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\SubSec{Contrast vectors $g_F$}
+Main-effect vectors = columns of the table. Interaction vectors from \textbf{Hadamard (elementwise) product}:
+$$g_{F_jF_k}=g_{F_j}\odot g_{F_k},\quad g_{F_1F_2F_3}=g_{F_1}\odot g_{F_2}\odot g_{F_3}.$$
+Rule: \key{same sign $\to +$, different sign $\to -$}.\\
+Sanity: every non-grand-mean $g_F$ has $2^{K-1}$ pluses and $2^{K-1}$ minuses; distinct $g_F$'s are orthogonal.
+
+\SubSec{Factor effect estimator}
+With $Q=2^K$ cells, observed cell means $\bar Y^{obs}$ length $Q$:
+$$\boxed{\hat\tau_F=\frac{1}{2^{K-1}}\,g_F^{\top}\bar Y^{obs}}.$$
+Interpretation of $\hat\tau_{F_j}$: average change in response when $F_j$ flips from $-$ to $+$, averaged over all combos of other factors.
+
+\SubSec{Neymanian variance (equal $n$ per cell)}
+Pool within-cell variances: $\hat S^2=\tfrac{1}{2^K}\sum_w s_w^2$.
+$$\widehat{\mathrm{Var}}(\hat\tau_F)=\frac{2^K}{N}\hat S^2.$$
+Same formula for every effect (main or interaction). 95\% CI: $\hat\tau_F\pm 2SE$.
+
+\SubSec{Fisherian for factorial}
+\key{Test statistic}: $\hat\tau_F$ itself.\\
+Under sharp null ($\tau_{iF}=0\forall i,F$), each unit's $2^K$ potential outcomes are identical. $Y^{obs}$ fixed; re-randomize $N$ units into $Q$ cells ($n$ each). Total perms $=N!/(n!)^Q$ -- usually huge $\Rightarrow$ Monte Carlo. Recompute $\hat\tau_F^{rand}$ each draw; two-sided $p=\#\{|\hat\tau_F^{rand}|\ge|\hat\tau_F^{obs}|\}/B$.
+
+\SubSec{Practical meaning of $g_F$}
+$g_F$ is a \textbf{recipe}: ``$+$'' $=$ add that cell, ``$-$'' $=$ subtract it. $g_{F_1F_2}^\top\bar Y/2^{K-1}$ is exactly the ``difference of differences'' that defines interaction -- just mechanized. Orthogonality $\Rightarrow$ each effect estimated independently (no contamination).
+
+\SubSec{Mini worked example ($K{=}3$, baking)}
+Cell means in lex order $\bar Y^{obs}=(4,6,5,9,5,7,8,14)$. Divisor $=2^{K-1}=4$.
+$\hat\tau_{F_1}=(-4-6-5-9+5+7+8+14)/4=10/4=2.5$.
+$\hat\tau_{F_2}=(-4-6+5+9-5-7+8+14)/4=14/4=3.5$.
+$\hat\tau_{F_3}=(-4+6-5+9-5+7-8+14)/4=14/4=3.5$.
+$\hat\tau_{F_1F_2}=(+4+6-5-9-5-7+8+14)/4=6/4=1.5$ (interaction).
+With $n{=}2$ per cell, $s_w^2=2\Rightarrow\hat S^2=2$; $\widehat{\mathrm{Var}}(\hat\tau_F)=\tfrac{8}{16}\cdot 2=1\Rightarrow SE=1$; each 95\% CI $=\hat\tau_F\pm 2$.
+
+% ==================== 7. FRACTIONAL FACTORIAL ====================
+\Sec{Fractional Factorial}
+
+\SubSec{Why}
+Full $2^K$ needs $2^K$ runs -- often too expensive. A $2^{K-p}$ fraction uses only $2^{K-p}$ runs at the cost of aliasing.
+
+\SubSec{Half-fraction $2^{4-1}$ via $D=ABC$}
+Start with $2^3$ lex table on $A,B,C$. Set column $D$ = elementwise product $A\odot B\odot C$.
+\begin{center}\tiny
+\begin{tabular}{ccccc}
+\toprule
+\# & $A$ & $B$ & $C$ & $D{=}ABC$ \\
+\midrule
+1 & $-$ & $-$ & $-$ & $-$ \\
+2 & $-$ & $-$ & $+$ & $+$ \\
+3 & $-$ & $+$ & $-$ & $+$ \\
+4 & $-$ & $+$ & $+$ & $-$ \\
+5 & $+$ & $-$ & $-$ & $+$ \\
+6 & $+$ & $-$ & $+$ & $-$ \\
+7 & $+$ & $+$ & $-$ & $-$ \\
+8 & $+$ & $+$ & $+$ & $+$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\SubSec{Defining relation \& aliasing}
+The generator $D=ABC$ $\Leftrightarrow$ defining relation \key{$I=ABCD$}.\\
+Multiply both sides by any effect $X$ (using $X^2=I$, i.e.\ same column squared = all $+1$):
+\begin{itemize}[leftmargin=1.2em,noitemsep,nosep]
+\item $A\cdot I=A\cdot ABCD\Rightarrow A\equiv BCD$
+\item $AB\cdot I = AB\cdot ABCD\Rightarrow AB\equiv CD$
+\end{itemize}
+Aliased effects share the same contrast column $\Rightarrow$ indistinguishable from 8 runs alone.
+
+\SubSec{Full alias table for $I=ABCD$}
+\begin{center}\tiny
+\begin{tabular}{ll|ll}
+\toprule
+\multicolumn{2}{c}{Clear pair} & \multicolumn{2}{c}{Clear pair} \\
+\midrule
+$I$ & $ABCD$ & $D$ & $ABC$ \\
+$A$ & $BCD$  & $AB$ & $CD$ \\
+$B$ & $ACD$  & $AC$ & $BD$ \\
+$C$ & $ABD$  & $AD$ & $BC$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\SubSec{Resolution}
+Shortest word length in defining relation = \textbf{resolution}. For $I=ABCD$, length 4 $\Rightarrow$ \key{Resolution IV}.
+\begin{itemize}[leftmargin=1.2em,noitemsep,nosep]
+\item Res III: main aliased with 2fi ($\to$ risky)
+\item Res IV: main clear of 2fi, but 2fi aliased with 2fi
+\item Res V: main \& 2fi clear, 2fi aliased with 3fi (good!)
+\end{itemize}
+
+\SubSec{Estimating effects in a $2^{K-1}$}
+Use the $2^{K-1}$ lex table as if it were a full $2^{K-1}$. Effect formula:
+$$\hat\tau_F=\frac{1}{2^{(K-1)-1}}g_F^\top\bar Y^{obs}=\frac{g_F^\top\bar Y^{obs}}{2^{K-2}}.$$
+What you actually estimate is $\tau_F + \tau_{F'}$ where $F'$ is $F$'s alias. If higher-order alias is negligible, $\hat\tau_F\approx\tau_F$.
+
+\SubSec{Worked example}
+$\bar Y^{obs}=(20,25,24,27,23,30,28,33)$ in the order above.\\
+$g_A^\top\bar Y=-20-25-24-27+23+30+28+33=18$.\\
+$\hat\tau_A=18/4=4.5$ (with $K=3$ for 8-run fraction). Strictly estimating $\tau_A+\tau_{BCD}$; assuming $\tau_{BCD}\!\approx\!0$, main effect of $A\approx 4.5$.
+
+% ==================== 8. FISHERIAN T-STATS SUMMARY ====================
+\Sec{Fisherian $T$'s by Design}
+
+\begin{center}\tiny
+\begin{tabular}{p{1.3cm}p{1.9cm}p{3.5cm}}
+\toprule
+Design & Test stat $T$ & Reference set \\
+\midrule
+CRE & $T_{dm}=\bar Y_T-\bar Y_C$ & $\binom{N}{N_T}$ label perms \\
+Matched Pair & $T=\bar d$ & $2^P$ sign flips within pairs \\
+Multi-Trt CRE & $F=\tfrac{MS_{Tr}}{MS_{Res}}$ & $\tfrac{N!}{\prod N_j!}$ perms (one-sided) \\
+Crossover & $T_{paired}=\tfrac{\bar d}{s_D/\sqrt N}$ & $2^N$ per-subject sign flips \\
+Block & $T_\lambda=\sum_k\lambda_k\Delta_k$ & $\prod_k\binom{N(k)}{N_t(k)}$ within-block \\
+Factorial $2^K$ & $\hat\tau_F$ itself & $N!/(n!)^{2^K}$ $\to$ Monte Carlo \\
+\bottomrule
+\end{tabular}
+\end{center}
+\vspace{1pt}
+
+\begin{infobox}[title=Generic Fisherian recipe (memorize!)]
+\begin{enumerate}[leftmargin=1.2em,noitemsep,nosep]
+\item State sharp null $H_0: Y_i(1)=Y_i(0)\forall i$ (or all factor effects $=0$).
+\item Treat the $N$ observed numbers as \key{fixed}.
+\item Enumerate/sample the \key{design-specific} reference set of assignments.
+\item For each, recompute $T^{rand}$.
+\item $p=\#\{|T^{rand}|\ge|T^{obs}|\}/|W^+|$ (two-sided unless $F$).
+\end{enumerate}
+\end{infobox}
+
+% ==================== 9. SYMBOL GLOSSARY (compact) ====================
+\Sec{Symbol Glossary (Quick Examples)}
+
+\SubSubSec{General}
+\symb{W_i\in\{0,1\}}{treatment indicator for unit $i$}{$W_3=1$ means plot 3 got new fertilizer}\\[1pt]
+\symb{Y_i(w)}{potential outcome under $w$}{$Y_4(1)=34$ is plot 4's yield if treated}\\[1pt]
+\symb{Y_i^{obs}=Y_i(W_i)}{the one outcome we actually see}{$Y_4^{obs}=34$}\\[1pt]
+\symb{\tau_i}{$Y_i(1)-Y_i(0)$, unit-level causal effect}{if $Y_1(1)=30,Y_1(0)=25$, then $\tau_1=5$}\\[1pt]
+\symb{\tau}{$\tfrac1N\sum\tau_i$, finite-population ATE}{$\tau=5$ avg across 6 plots}\\[1pt]
+\symb{\hat\tau}{estimator of $\tau$ from one realized $W$}{$\hat\tau=9.67$ here even though $\tau=5$}\\[1pt]
+\symb{S_\tau^2}{$\tfrac{1}{N-1}\sum(\tau_i-\tau)^2$, finite-pop var of $\tau_i$}{\textbf{unobservable} -- drop in CRE variance}\\[1pt]
+\symb{s_j^2}{sample variance in arm $j$, $\div(N_j-1)$}{$s_1^2=4$ for $\{30,32,34\}$}
+
+\SubSubSec{Matched Pair / Crossover}
+\symb{d_p\text{ or }d_i}{within-pair/within-subject diff, $T-C$}{$d_1=8-5=3$}\\[1pt]
+\symb{\bar d}{mean of differences}{$\bar d=3$ for $d=\{3,1,5,3\}$}\\[1pt]
+\symb{s_d^2,s_D^2}{sample var of differences, $\div(P-1)$ or $(N-1)$}{$s_d^2=8/3$}\\[1pt]
+\symb{T_{paired}}{paired $t$-stat $=\bar d/(s_D/\sqrt N)$}{$T_{paired}\approx 3.15$ if $\bar d=0.8,s_D=0.62,N=6$}
+
+\SubSubSec{Multi-Treatment / ANOVA}
+\symb{\bar Y_j}{mean of arm $j$}{$\bar Y_A=4$ for $\{3,5\}$}\\[1pt]
+\symb{\bar Y}{grand mean $=\tfrac1N\sum Y_i^{obs}$}{$\bar Y=22/3$ for 3 arms means $\{4,7,11\}$}\\[1pt]
+\symb{SS_{Treat}}{$\sum_j N_j(\bar Y_j-\bar Y)^2$}{measures between-arm separation}\\[1pt]
+\symb{SS_{Res}}{$\sum_{j,i}(Y_i-\bar Y_j)^2$}{within-arm noise}\\[1pt]
+\symb{F}{$MS_{Treat}/MS_{Res}$}{$F\approx 1$ under $H_0$; large $F$ rejects}
+
+\SubSubSec{Block}
+\symb{N(k)}{size of block $k$}{$N(y)=6$ young}\\[1pt]
+\symb{\lambda_k}{$N(k)/N$, population weight}{$\lambda_y=0.6$ out of $N=10$}\\[1pt]
+\symb{\hat\tau(k)}{within-block effect $\bar Y_T(k)-\bar Y_C(k)$}{$\hat\tau(y)=4$}\\[1pt]
+\symb{T_\lambda}{$\sum_k\lambda_k\hat\tau(k)$}{$T_\lambda=0.6(4)+0.4(3)=3.6$}
+
+\SubSubSec{Factorial}
+\symb{K}{\# two-level factors}{$K=3$ for temp$\times$time$\times$flour}\\[1pt]
+\symb{g_F}{contrast vector for effect $F$, length $2^K$}{$g_{F_1}=(-,-,-,-,+,+,+,+)$}\\[1pt]
+\symb{g_{F_jF_k}}{$g_{F_j}\odot g_{F_k}$ (elementwise product)}{$g_{F_1F_2}=(+,+,-,-,-,-,+,+)$}\\[1pt]
+\symb{\hat\tau_F}{$\tfrac{1}{2^{K-1}}g_F^\top\bar Y^{obs}$}{$\hat\tau_{F_1}=10/4=2.5$}\\[1pt]
+\symb{\hat S^2}{$\tfrac{1}{2^K}\sum_w s_w^2$, pooled within-cell var}{$\hat S^2=2$ if all cell vars are 2}
+
+\SubSubSec{Fractional Factorial}
+\symb{I}{identity / grand-mean column}{all $+1$'s; $X\cdot I=X$}\\[1pt]
+\symb{D=ABC}{generator for $2^{4-1}$ half-fraction}{builds column $D$ from $A,B,C$}\\[1pt]
+\symb{I=ABCD}{defining relation}{multiply by $X$ to find $X$'s alias}\\[1pt]
+\symb{A\equiv BCD}{alias pair (same contrast column)}{can't separate $\tau_A$ from $\tau_{BCD}$ with 8 runs}\\[1pt]
+\symb{\text{Resolution}}{min word length in defining relation}{$ABCD\Rightarrow$ Res IV}
+
+% ==================== 10. CONCEPTUAL Q&A ====================
+\Sec{Conceptual Q\&A (High-Yield)}
+
+\begin{qbox}
+\textbf{Q1. Why is CRE variance ``conservative'' but Matched Pair ``exact''?}\\
+CRE: true variance contains $S_\tau^2/N$, which requires both potential outcomes per unit -- unobservable. We drop it, giving an upper bound.\\
+MP: $d_p$ is \emph{directly observable} for each pair; no hidden term. $s_d^2/P$ is unbiased for $\mathrm{Var}(\hat\tau)$, no dropping needed.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q2. Why 95\% CI uses $\pm 2$, not $\pm 1.96$?}\\
+STAT 140 convention: 2 is the rule-of-thumb for a 95\% interval under approximate normality. Using $\pm 2$ is slightly \emph{more conservative} (wider) than $\pm 1.96$, so you never under-cover. Always $\pm 2$ on exams unless problem says otherwise.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q3. Why is Block's weight $N(k)/N$ rather than $1/B$?}\\
+Target is ``avg causal effect per \emph{person} in the population''. Blocks with more people should count more. $1/B$ answers ``avg across blocks'' (ignores size) -- different estimand.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q4. Why is Block's reference set $\prod_k\binom{N(k)}{N_t(k)}$, not $\binom{N}{N_T}$?}\\
+The design re-randomizes \emph{only within each block}. Using $\binom{N}{N_T}$ allows swapping units between blocks -- violates design. Fewer legal assignments $\Rightarrow$ tighter inference.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q5. Why can Crossover estimate $\tau_i$ but CRE cannot?}\\
+Crossover observes each unit under \emph{both} conditions (across the two periods). $d_i$ directly gives $\tau_i$. In CRE each unit is observed under only one condition, so $\tau_i$ is always missing one potential outcome.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q6. Matched Pair reference set: $2^P$ or $\binom{N}{N/2}$?}\\
+$2^P$. The design restricts randomization to \emph{within} pairs. $\binom{N}{N/2}$ would allow cross-pair swaps $\Rightarrow$ wrong null distribution, wrong $p$-value.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q7. In Multi-Treatment CRE, why gate with $F$ before pairwise?}\\
+$\binom{J}{2}$ pairwise tests inflate family-wise error to $\approx 1-(1-\alpha)^{\binom{J}{2}}$ ($\approx 0.14$ at $J=3,\alpha=0.05$). The $F$-test provides one overall check; only if $F$ rejects do we look at pairs.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q8. Why does Factorial use $\hat\tau_F$ \emph{itself} as the Fisherian $T$?}\\
+Because the design is already symmetric -- every $g_F$ has equal $+$'s and $-$'s. Under sharp null, $E[\hat\tau_F]=0$ and its randomization distribution is symmetric about 0. No need for a studentized ratio.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q9. What does ``Resolution IV'' mean in fractional factorial?}\\
+Shortest word in the defining relation has length 4. Consequence: main effects are \emph{clear} of all 2-factor interactions, but 2fi's alias with each other. Res III = main aliased with 2fi (bad). Res V = main and 2fi both clear of each other (best; needs more runs).
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q10. When do we need Monte Carlo vs full enumeration?}\\
+Enumerate when $|W^+|$ is small: MP $(2^5=32)$, small block $(\le 10^3)$, small CRE $(\binom{8}{4}=70)$. MC when too big: CRE with $N=30$, Factorial reshuffle $(N!/(n!)^Q)$. Standard $B=10{,}000$.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q11. ``Effect modification'' vs ``overall ATE'' -- are they competing?}\\
+No, complementary. Overall ATE (integrated via $\lambda_k$) gives population summary. Effect modification (difference $\hat\tau(a)-\hat\tau(b)$) diagnoses whether the effect \emph{depends on block}. A significant overall ATE + significant effect modification means ``it works on average but more strongly for some subgroup''.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q12. TI-Nspire CX quick variance}\\
+For $\{3,1,5,3\}$: use \texttt{variance(\{3,1,5,3\})} in a calc page. Returns sample variance (divides by $n-1$) directly. Do \textbf{not} square the stdev manually -- risk of rounding.
+\end{qbox}
+
+\begin{qbox}
+\textbf{Q13. What does $\hat\tau_{F_1F_2}$ mean; why is $\hat\tau_{F_1}$ tricky if $\hat\tau_{F_1F_2}$ is large?}\\
+$\hat\tau_{F_1F_2}$ is the \textbf{interaction}: how much the effect of $F_1$ \emph{changes} when $F_2$ flips $-\!\to\!+$ (a ``difference of differences''; equivalently, half of [effect of $F_1$ at $F_2{=}+$] $-$ [effect of $F_1$ at $F_2{=}-$]).\\
+If $\hat\tau_{F_1F_2}$ is large, $\hat\tau_{F_1}$ is only an \emph{average} over the two levels of $F_2$ -- the real effect of $F_1$ depends on $F_2$, so reporting $\hat\tau_{F_1}$ alone hides the true pattern (could even flip sign in one $F_2$ cell).
+\end{qbox}
+
+% ==================== 11. EXAM-TAKING FLOW ====================
+\Sec{Exam-Taking Flow}
+
+\begin{enumerate}[leftmargin=*,noitemsep,nosep]
+\item \key{Identify the design} first (CRE? MP? Crossover? Block? Factorial? Fractional?). Everything flows from this.
+\item If $2^K$ or $2^{K-p}$ $\to$ \key{write the lex-order table} first, then $g_F$, \emph{then} plug numbers.
+\item If fractional $\to$ \key{write defining relation} $I=\cdots$, then list alias pairs, then compute as if $2^{K-p}$ full factorial.
+\item If Fisherian $\to$ \key{state sharp null, fix observed numbers, identify reference set size, pick $T$}, then enumerate or MC.
+\item If Neymanian $\to$ $\hat\tau$, sample variances, $\widehat{\mathrm{Var}}$, $SE$, $\hat\tau\pm 2SE$.
+\item \key{Units check}: df, divisors, $2^{K-1}$ vs $2^K$, $N_t(k)$ vs $N(k)$ -- most errors here.
+\item For CIs / variances: ask yourself \emph{conservative or exact?} If dropping $S_\tau^2$ $\to$ conservative.
+\end{enumerate}
+
+\begin{infobox}[title=Final cheat summary]
+\footnotesize
+\begin{tabular}{p{1.6cm}p{1.6cm}p{2.1cm}p{1.7cm}}
+\toprule
+Design & $|W^+|$ & Variance nature & Fisher $T$ \\
+\midrule
+CRE & $\binom{N}{N_T}$ & Conservative (drops $S_\tau^2$) & $\bar Y_T-\bar Y_C$ \\
+MP & $2^P$ & \textbf{Exact} $s_d^2/P$ & $\bar d$ \\
+Multi-Trt & $N!/\prod N_j!$ & Conservative & $F$ \\
+Crossover & $2^N$ & Based on $s_D^2/N$ & $T_{paired}$ \\
+Block & $\prod_k\binom{N(k)}{N_t(k)}$ & Conservative & $T_\lambda$ \\
+Fact.\ $2^K$ & $N!/(n!)^{2^K}$ (MC) & $\tfrac{2^K}{N}\hat S^2$ & $\hat\tau_F$ \\
+Frac.\ $2^{K-p}$ & $2^{K-p}$ runs & same form, $K\to K-p$ & $\hat\tau_F$ (aliased) \\
+\bottomrule
+\end{tabular}
+\end{infobox}
+
+\begin{center}\color{hdr}\textbf{Good luck, Casval!}\ \textit{Read the design, write the table, then plug numbers.} \end{center}
+
+\end{multicols*}
+\end{document}
